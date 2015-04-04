@@ -33,7 +33,7 @@ public class PairDao extends SQLiteOpenHelper {
     onCreate(db);
   }
 
-  public void createPair(Pair pair) {
+  public void create(Pair pair) {
     SQLiteDatabase db = this.getWritableDatabase();
 
     ContentValues values = new ContentValues();
@@ -43,6 +43,42 @@ public class PairDao extends SQLiteOpenHelper {
     values.put(KEY_SESSION_KEY, pair.sessionKey);
 
     db.insert(TABLE_NAME, null, values);
+    db.close();
+  }
+
+  public Pair getByPhoneNumber(String phoneNumber) {
+    SQLiteDatabase db = this.getReadableDatabase();
+
+    Cursor cursor = db.query(TABLE_NAME, 
+      new String[] { KEY_ID, KEY_PHONE, KEY_PUBLIC_KEY_EXPONENT, KEY_PUBLIC_KEY_MODULUS, KEY_SESSION_KEY }, 
+      KEY_PHONE + "=?", 
+      new String[] { String.valueOf(phoneNumber) }, 
+      null, null, null, null);
+
+    if (cursor != null)
+      cursor.moveToFirst();
+
+    Pair pair = new Pair(Integer.parseInt(cursor.getString(0)),
+      cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+
+    return pair;
+  }
+
+  public int update(Pair pair) {
+    SQLiteDatabase db = this.getWritableDatabase();
+
+    ContentValues values = new ContentValues();
+    values.put(KEY_PHONE, pair.phoneNumber);
+    values.put(KEY_PUBLIC_KEY_EXPONENT, pair.publicKeyExponent);
+    values.put(KEY_PUBLIC_KEY_MODULUS, pair.publicKeyModulus);
+    values.put(KEY_SESSION_KEY, pair.sessionKey);
+
+    return db.update(TABLE_NAME, values, KEY_ID + " = ?", new String[] { String.valueOf(pair.id) });
+  }
+
+  public void delete(Pair pair) {
+    SQLiteDatabase db = this.getWritableDatabase();
+    db.delete(TABLE_NAME, KEY_ID + " = ?", new String[] { String.valueOf(pair.id) });
     db.close();
   }
 
