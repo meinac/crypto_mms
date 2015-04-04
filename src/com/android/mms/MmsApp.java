@@ -43,7 +43,7 @@ import com.android.mms.util.DraftCache;
 import com.android.mms.util.PduLoaderManager;
 import com.android.mms.util.RateController;
 import com.android.mms.util.ThumbnailManager;
-
+import com.android.mms.crypto.RSACrypto;
 public class MmsApp extends Application {
     public static final String LOG_TAG = "Mms";
 
@@ -56,11 +56,12 @@ public class MmsApp extends Application {
     private PduLoaderManager mPduLoaderManager;
     private ThumbnailManager mThumbnailManager;
     private DrmManagerClient mDrmManagerClient;
+    public RSACrypto rsaCrypto = null;
 
     @Override
     public void onCreate() {
         super.onCreate();
-
+        rsaCrypto = new RSACrypto(getApplicationContext());
         if (Log.isLoggable(LogTag.STRICT_MODE_TAG, Log.DEBUG)) {
             // Log tag for enabling/disabling StrictMode violation log. This will dump a stack
             // in the log that shows the StrictMode violator.

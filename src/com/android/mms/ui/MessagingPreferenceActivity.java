@@ -30,6 +30,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
+import android.preference.EditTextPreference;
 import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -80,6 +81,7 @@ public class MessagingPreferenceActivity extends PreferenceActivity
     private PreferenceCategory mMmsPrefCategory;
     private PreferenceCategory mNotificationPrefCategory;
 
+    private EditTextPreference phoneNumberPref;
     private Preference mSmsLimitPref;
     private Preference mSmsDeliveryReportPref;
     private Preference mMmsLimitPref;
@@ -157,6 +159,7 @@ public class MessagingPreferenceActivity extends PreferenceActivity
                 (PreferenceCategory)findPreference("pref_key_notification_settings");
 
         mManageSimPref = findPreference("pref_key_manage_sim_messages");
+        phoneNumberPref = (EditTextPreference) findPreference("pref_key_manage_phone_number");
         mSmsLimitPref = findPreference("pref_key_sms_delete_limit");
         mSmsDeliveryReportPref = findPreference("pref_key_sms_delivery_reports");
         mMmsDeliveryReportPref = findPreference("pref_key_mms_delivery_reports");
@@ -217,6 +220,10 @@ public class MessagingPreferenceActivity extends PreferenceActivity
                     TextUtils.isEmpty(MessageUtils.getLocalNumber())) {
                 mMmsPrefCategory.removePreference(mMmsGroupMmsPref);
             }
+        }
+
+        if(phoneNumberPref.getText() != null) {
+            phoneNumberPref.setSummary(phoneNumberPref.getText());
         }
 
         setEnabledNotificationsPref();
@@ -397,12 +404,16 @@ public class MessagingPreferenceActivity extends PreferenceActivity
 
     private void registerListeners() {
         mRingtonePref.setOnPreferenceChangeListener(this);
+        phoneNumberPref.setOnPreferenceChangeListener(this);
     }
 
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         boolean result = false;
         if (preference == mRingtonePref) {
             setRingtoneSummary((String)newValue);
+            result = true;
+        } else if (preference == phoneNumberPref) {
+            phoneNumberPref.setSummary((String)newValue);
             result = true;
         }
         return result;

@@ -68,6 +68,7 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.net.Uri;
 
 import com.android.mms.LogTag;
 import com.android.mms.MmsConfig;
@@ -86,6 +87,8 @@ import com.google.android.mms.pdu.PduHeaders;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+
+import org.json.JSONObject;
 
 /**
  * This activity provides a list view of existing conversations.
@@ -558,6 +561,13 @@ public class ConversationList extends ListActivity implements DraftCache.OnDraft
                 Intent intent = new Intent(this, MessagingPreferenceActivity.class);
                 startActivityIfNeeded(intent, -1);
                 break;
+            case R.id.action_generate_qr_code:
+                Intent startActivityIntent = new Intent(this, GenerateQRCodeActivity.class);
+                startActivityIfNeeded(startActivityIntent, -1);
+                break;
+            case R.id.action_read_qr_code:
+                readQRCode();
+                break;
             case R.id.action_debug_dump:
                 LogTag.dumpInternalTables(this);
                 break;
@@ -577,6 +587,41 @@ public class ConversationList extends ListActivity implements DraftCache.OnDraft
                 return true;
         }
         return false;
+    }
+
+    public void readQRCode() {
+        try {
+            Intent intent = new Intent("com.google.zxing.client.android.SCAN");
+            intent.putExtra("SCAN_MODE", "QR_CODE_MODE"); // "PRODUCT_MODE for bar codes
+
+            startActivityForResult(intent, 0);
+        } catch(Exception ex) {
+            Uri marketUri = Uri.parse("market://details?id=com.google.zxing.client.android");
+            Intent marketIntent = new Intent(Intent.ACTION_VIEW, marketUri);
+            startActivity(marketIntent);
+        }
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == 0) {
+            if (resultCode == RESULT_OK) {
+                String content = data.getStringExtra("SCAN_RESULT");
+                try {
+                    JSONObject json = new JSONObject(content);
+                    String phoneNumber = json.getString("phone_number");
+                    String exponent = json.getString("exponent");
+                    String modulus = json.getString("modulus");
+                } catch(Exception ex) {
+                    Toast.makeText(getApplicationContext(), R.string.qr_code_invalid_json, Toast.LENGTH_LONG).show();
+                }
+                Log.e("QR Code", content);
+            }
+            if(resultCode == RESULT_CANCELED){
+                Toast.makeText(getApplicationContext(), R.string.qr_code_couldnt_read, Toast.LENGTH_LONG).show();
+            }
+        }
     }
 
     @Override

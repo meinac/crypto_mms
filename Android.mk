@@ -20,6 +20,7 @@ LOCAL_PACKAGE_NAME := CryptoMms
 LOCAL_JAVA_LIBRARIES += telephony-common mms-common
 LOCAL_STATIC_JAVA_LIBRARIES += android-common jsr305
 LOCAL_STATIC_JAVA_LIBRARIES += android-common-chips
+LOCAL_STATIC_JAVA_LIBRARIES += core-2.3.0
 
 LOCAL_RESOURCE_DIR := $(addprefix $(LOCAL_PATH)/, $(res_dirs))
 LOCAL_AAPT_FLAGS := --auto-add-overlay
@@ -32,6 +33,11 @@ LOCAL_PROGUARD_FLAG_FILES := proguard.flags
 LOCAL_PRIVILEGED_MODULE := true
 
 include $(BUILD_PACKAGE)
+
+include $(CLEAR_VARS)
+
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := core-2.3.0:libs/core-2.3.0.jar
+include $(BUILD_MULTI_PREBUILT)
 
 # This finds and builds the test apk as well, so a single make does both.
 include $(call all-makefiles-under,$(LOCAL_PATH))

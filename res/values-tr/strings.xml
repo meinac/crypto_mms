@@ -20,12 +20,14 @@
 
 <resources xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:xliff="urn:oasis:names:tc:xliff:document:1.2">
-    <string name="app_label" msgid="1503967887341230795">"Mesajlaş."</string>
+    <string name="app_label" msgid="1503967887341230795">"Encrypted Messaging"</string>
     <string name="new_message" msgid="1530369762346003973">"Yeni ileti"</string>
     <string name="menu_call_back" msgid="7538482331117914146">"Ara: <xliff:g id="NAME">%s</xliff:g>"</string>
     <string name="menu_send_email" msgid="671366308915241664">"<xliff:g id="NAME">%s</xliff:g> kişisine e-posta gönder"</string>
     <string name="menu_compose_new" msgid="3763437973691046238">"Oluştur"</string>
     <string name="menu_preferences" msgid="4693148116114749414">"Ayarlar"</string>
+    <string name="menu_generate_qr_code" msgid="4693148116114749414">"QR Code Oluştur"</string>
+    <string name="menu_read_qr_code" msgid="4693148116114749414">"QR Code Oku"</string>
     <string name="menu_add_address_to_contacts" msgid="4491980950419914944">"<xliff:g id="CONTACTEMAILORNUMBER">%s</xliff:g> öğesini Kişiler\'e ekle"</string>
     <string name="menu_call" msgid="5877123227307074690">"Çağrı"</string>
     <string name="menu_search" msgid="2289469305728821360">"Ara"</string>
@@ -156,12 +158,14 @@
     <string name="restore_default" msgid="7165341506551155053">"Varsayılan ayarları geri yükle"</string>
     <string name="pref_notification_settings_title" msgid="6420782563630369776">"Bildirimler"</string>
     <string name="pref_mms_settings_title" msgid="55618772118264355">"Multimedya mesajları (MMS)"</string>
+    <string name="pref_sms_main_settings_title">"Uygulama"</string>
     <string name="pref_sms_settings_title" msgid="5173078369851066881">"Kısa mesajlar (SMS)"</string>
     <string name="pref_sms_storage_title" msgid="9001233319190616445">"Depolama"</string>
     <string name="pref_title_sms_disabled" msgid="1441894740130104326">"SMS Devre Dışı"</string>
     <string name="pref_summary_sms_disabled" msgid="8975773722051230744">"Mesajlaşma\'yı varsayılan SMS uygulamanız yapmak için dokunun"</string>
     <string name="pref_title_sms_enabled" msgid="1857849790200375277">"SMS Etkin"</string>
     <string name="pref_summary_sms_enabled" msgid="2106125420361911250">"Varsayılan SMS uygulamanızı değiştirmek için dokunun"</string>
+    <string name="pref_summary_manage_phone_number">"Uygulamayı kullanabilmek için telefon numaranızı girin"</string>
     <string name="pref_summary_manage_sim_messages" msgid="4141349892597640864">"SIM kartınızda depolanan iletileri yönetin"</string>
     <string name="pref_summary_mms_delivery_reports" msgid="4874657984217756112">"Gönderdiğiniz her ileti için bir iletim raporu iste"</string>
     <string name="pref_summary_mms_read_reports" msgid="2748323864008907440">"Gönderdiğiniz her ileti için bir okundu raporu iste"</string>
@@ -169,6 +173,7 @@
     <string name="pref_summary_auto_delete" msgid="7719538116486177613">"Sınıra ulaşıldığında eski iletileri silin"</string>
     <string name="pref_summary_delete_limit" msgid="597128041393045216">"Her bir ileti dizisi için <xliff:g id="COUNT">%1$s</xliff:g> ileti"</string>
     <string name="pref_summary_mms_group_mms" msgid="2266928687440696745">"Birden fazla alıcı olduğunda tek bir mesajı göndermek için MMS kullan"</string>
+    <string name="pref_title_manage_phone_number">"Telefon Numarası"</string>
     <string name="pref_title_manage_sim_messages" msgid="7820895261757881177">"SIM kart iletilerini yönet"</string>
     <string name="pref_title_mms_delivery_reports" msgid="6666857926679451910">"İletim raporları"</string>
     <string name="pref_title_mms_group_mms" msgid="1251698526583908432">"Grup mesajlaşma"</string>
@@ -299,6 +304,10 @@
     <string name="delivery_report_activity" msgid="2957463094232916364">"İletim raporu"</string>
     <string name="storage_limits_activity" msgid="8810530813311077716">"Depolama sınırları"</string>
     <string name="change_duration_activity" msgid="7048606979485031693">"Süreyi değiştir"</string>
+    <string name="generate_qr_code_activity">"QR Code"</string>
+    <string name="qr_code_couldnt_read">"QR Code Okunmadı"</string>
+    <string name="qr_code_invalid_json">"Hatalı Data"</string>
+    <string name="phone_number_should_be_setted">"Telefon numarası kayıt edilmiş olmalıdır!"</string>
     <string name="edit_slideshow_activity" msgid="8751493388760050529">"Slayt gösterisini düzenle"</string>
     <string name="recipient_list_activity" msgid="1254938236543727019">"Grup katılımcıları"</string>
     <string name="edit_slide_activity" msgid="8752829671778696983">"Slaydı düzenle"</string>
@@ -314,6 +323,8 @@
     <item quantity="other" msgid="6196382287749539209">"\"<xliff:g id="SEARCH">%2$s</xliff:g>\" için <xliff:g id="NUMBER">%1$s</xliff:g> sonuç"</item>
   </plurals>
     <string name="search_history" msgid="4127805495662693154">"\"<xliff:g id="SEARCH">%2$s</xliff:g>\" için <xliff:g id="COUNT">%1$s</xliff:g> sonuç"</string>
+    <string name="enter_phone_number_title">"Telefon Numarası"</string>
+    <string name="enter_phone_number_text">"Telefon Numaranızı girin"</string>
     <string name="confirm_clear_search_title" msgid="8510295993632032904">"Temizle"</string>
     <string name="confirm_clear_search_text" msgid="8731877031837077478">"Arama geçmişi temizlenecek."</string>
     <string name="pref_mms_clear_search_history_title" msgid="6159758850628148164">"Arama geçmişini temizle"</string>
