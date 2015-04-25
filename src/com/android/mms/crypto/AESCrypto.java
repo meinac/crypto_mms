@@ -1,10 +1,12 @@
 package com.android.mms.crypto;
 
+import com.android.mms.crypto_models.Pair;
+
 public class AESCrypto {
 
   //returns randomly generated aes key as String
   public String generateAESKey() {
-
+    return null;
   }
 
   /*
@@ -13,7 +15,7 @@ public class AESCrypto {
   * returns encoded message
   */
   public String encrypt(Pair pair, String message) {
-
+    return null;
   }
 
   /*
@@ -22,7 +24,7 @@ public class AESCrypto {
   * returns original message
   */
   public String decrypt(Pair pair, String message) {
-
+    return null;
   }
 
 }
