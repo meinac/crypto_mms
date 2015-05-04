@@ -23,7 +23,7 @@ public class AESCrypto {
 
     //returns randomly generated aes key as String
     @TargetApi(Build.VERSION_CODES.FROYO)
-    public String generateAESKey() {
+    public static String generateAESKey() {
         SecretKeySpec sks = null;
         byte[] sksbyte;
         String sessionKey;
@@ -43,16 +43,13 @@ public class AESCrypto {
         return  null;
     }
 
-
-
-
     /*
     * encrypts and encodes given string
     * using given pair's session_key
     * returns encoded message
     */
     @TargetApi(Build.VERSION_CODES.FROYO)
-    public String encrypt(Pair pair, String message) {
+    public static String encrypt(Pair pair, String message) {
         String encoded;
         byte[] encryptedBytes = null;
         try {
@@ -73,7 +70,7 @@ public class AESCrypto {
     * returns original message
     */
     @TargetApi(Build.VERSION_CODES.FROYO)
-    public String decrypt(Pair pair, String encoded) {
+    public static String decrypt(Pair pair, String encoded) {
         byte[] decryptedBytes = null;
         try {
             byte[] decoded = Base64.decode(encoded,Base64.DEFAULT);
@@ -86,9 +83,5 @@ public class AESCrypto {
         }
         return decryptedBytes.toString();
     }
-
-
-
-
 
 }

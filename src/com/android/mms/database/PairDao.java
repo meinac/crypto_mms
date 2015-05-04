@@ -55,13 +55,13 @@ public class PairDao extends SQLiteOpenHelper {
       new String[] { String.valueOf(phoneNumber) }, 
       null, null, null, null);
 
-    if (cursor != null)
+    if (cursor != null) {
       cursor.moveToFirst();
-
-    Pair pair = new Pair(Integer.parseInt(cursor.getString(0)),
-      cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
-
-    return pair;
+      Pair pair = new Pair(Integer.parseInt(cursor.getString(0)),
+        cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+      return pair;
+    }
+    return null;
   }
 
   public int update(Pair pair) {

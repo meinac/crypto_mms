@@ -2,6 +2,7 @@ package com.android.mms.crypto;
 
 import java.security.Key;
 import java.security.KeyFactory;
+import java.security.PublicKey;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.spec.RSAPrivateKeySpec;
@@ -21,6 +22,9 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.ObjectInputStream;
+import com.android.mms.crypto_models.Pair;
+import javax.crypto.Cipher;
+import android.util.Base64;
 
 public class RSACrypto {
 
@@ -116,6 +120,35 @@ public class RSACrypto {
       publicKeySpec = new RSAPublicKeySpec(modExp[0], modExp[1]);
     }
     return publicKeySpec;
+  }
+
+  public String decrypt(String string) {
+    RSAPrivateKeySpec keySpec = getPrivateKeySpec();
+    try {
+      KeyFactory fact = KeyFactory.getInstance("RSA");
+      java.security.PrivateKey privateKey = fact.generatePrivate(keySpec);
+
+      Cipher cipher = Cipher.getInstance("RSA");
+      cipher.init(Cipher.DECRYPT_MODE, privateKey);
+      return new String(cipher.doFinal(Base64.decode(string, Base64.DEFAULT)));
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  public static String encryptSessionKey(Pair pair) {
+    RSAPublicKeySpec keySpec = new RSAPublicKeySpec(new BigInteger(pair.publicKeyModulus), new BigInteger(pair.publicKeyExponent));
+    try {
+      KeyFactory fact = KeyFactory.getInstance("RSA");
+      PublicKey pubKey = fact.generatePublic(keySpec);
+
+      Cipher cipher = Cipher.getInstance("RSA");
+      cipher.init(Cipher.ENCRYPT_MODE, pubKey);
+      byte[] cipherData = cipher.doFinal(pair.sessionKey.getBytes());
+      return Base64.encodeToString(cipherData, Base64.DEFAULT);
+    } catch (Exception ex) {
+      return null;
+    }
   }
 
 }
