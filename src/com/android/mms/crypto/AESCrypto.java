@@ -19,12 +19,6 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AESCrypto {
-
-
-
-
-
-    byte[] decryptedBytes = null;
     static final String TAG = "SymmetricAlgorithmAES";
 
     //returns randomly generated aes key as String
@@ -80,6 +74,7 @@ public class AESCrypto {
     */
     @TargetApi(Build.VERSION_CODES.FROYO)
     public String decrypt(Pair pair, String encoded) {
+        byte[] decryptedBytes = null;
         try {
             byte[] decoded = Base64.decode(encoded,Base64.DEFAULT);
             Cipher c = Cipher.getInstance("AES");
