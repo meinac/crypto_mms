@@ -25,6 +25,9 @@ public class GenerateQRCodeActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     phoneNumber = PreferenceManager.getDefaultSharedPreferences(this).getString("pref_key_manage_phone_number", null);
+    if(phoneNumber.length() == 11) {
+      phoneNumber = "+9" + phoneNumber;
+    }
     rsaCrypto = new RSACrypto(this);
     setContentView(R.layout.activity_generate_qr_code);
     if(phoneNumber != null) {
@@ -37,7 +40,7 @@ public class GenerateQRCodeActivity extends Activity {
 
   public void generateQRCode() {
     try {
-      BitMatrix bitMatrix = new QRCodeWriter().encode("{phone_number: " + phoneNumber + ", exponent: " + rsaCrypto.getPublicKeySpec().getPublicExponent().toString() + ", modulus: " + rsaCrypto.getPublicKeySpec().getModulus().toString() + "}", BarcodeFormat.QR_CODE, 800, 800);
+      BitMatrix bitMatrix = new QRCodeWriter().encode("{\"phone_number\": \"" + phoneNumber + "\", \"exponent\": " + rsaCrypto.getPublicKeySpec().getPublicExponent().toString() + ", \"modulus\": \"" + rsaCrypto.getPublicKeySpec().getModulus().toString() + "\"}", BarcodeFormat.QR_CODE, 800, 800);
 
       Bitmap imageBitmap = Bitmap.createBitmap(800, 800, Bitmap.Config.ARGB_8888);
 

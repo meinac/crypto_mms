@@ -89,6 +89,8 @@ import java.util.Collection;
 import java.util.HashSet;
 
 import org.json.JSONObject;
+import com.android.mms.database.PairDao;
+import com.android.mms.crypto_models.Pair;
 
 /**
  * This activity provides a list view of existing conversations.
@@ -610,9 +612,12 @@ public class ConversationList extends ListActivity implements DraftCache.OnDraft
                 String content = data.getStringExtra("SCAN_RESULT");
                 try {
                     JSONObject json = new JSONObject(content);
+                    Log.d("CRYPTOMMS", content);
                     String phoneNumber = json.getString("phone_number");
                     String exponent = json.getString("exponent");
                     String modulus = json.getString("modulus");
+                    PairDao pairDao = new PairDao(getApplicationContext());
+                    pairDao.create(new Pair(phoneNumber, exponent, modulus));
                 } catch(Exception ex) {
                     Toast.makeText(getApplicationContext(), R.string.qr_code_invalid_json, Toast.LENGTH_LONG).show();
                 }

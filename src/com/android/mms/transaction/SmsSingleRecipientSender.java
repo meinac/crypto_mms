@@ -18,7 +18,9 @@ import com.android.mms.data.Conversation;
 import com.android.mms.ui.MessageUtils;
 import com.google.android.mms.MmsException;
 
+import com.android.mms.database.DelayedSmsDao;
 import com.android.mms.database.PairDao;
+import com.android.mms.crypto_models.DelayedSms;
 import com.android.mms.crypto_models.Pair;
 import com.android.mms.crypto.AESCrypto;
 import com.android.mms.crypto.RSACrypto;
@@ -38,8 +40,6 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
         mRequestDeliveryReport = requestDeliveryReport;
         mDest = dest;
         mUri = uri;
-        pairDao = new PairDao(mContext);
-        pair = pairDao.getByPhoneNumber(dest);
     }
 
     public boolean sendMessage(long token) throws MmsException {
@@ -60,11 +60,20 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
             mDest = MmsConfig.getEmailGateway();
             messages = smsManager.divideMessage(msgText);
         } else {
+            // remove spaces and dashes from destination number
+            // (e.g. "801 555 1212" -> "8015551212")
+            // (e.g. "+8211-123-4567" -> "+82111234567")
+            mDest = PhoneNumberUtils.stripSeparators(mDest);
+            mDest = Conversation.verifySingleRecipient(mContext, mThreadId, mDest);
+            pairDao = new PairDao(mContext);
+            pair = pairDao.getByPhoneNumber(mDest);
             if(pair != null) {
                 if(pair.sessionKey == null) {
                     pair.sessionKey = AESCrypto.generateAESKey();
-                    pairDao.update(pair);
-                    messages = smsManager.divideMessage(RSACrypto.encryptSessionKey(pair));
+                    String sessionKey = RSACrypto.encryptSessionKey(pair);
+                    messages = smsManager.divideMessage("#CSMS#SK" + sessionKey);
+                    DelayedSmsDao dSmsDao = new DelayedSmsDao(mContext);
+                    dSmsDao.create(new DelayedSms(mDest, mMessageText));
                 }
                 else {
                     messages = smsManager.divideMessage(AESCrypto.encrypt(pair, mMessageText));
@@ -73,11 +82,6 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
             else {
                 messages = smsManager.divideMessage(mMessageText);
             }
-            // remove spaces and dashes from destination number
-            // (e.g. "801 555 1212" -> "8015551212")
-            // (e.g. "+8211-123-4567" -> "+82111234567")
-            mDest = PhoneNumberUtils.stripSeparators(mDest);
-            mDest = Conversation.verifySingleRecipient(mContext, mThreadId, mDest);
         }
         int messageCount = messages.size();
 

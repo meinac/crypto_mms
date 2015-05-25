@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 import com.android.mms.crypto_models.Pair;
+import android.util.Log;
 
 public class PairDao extends SQLiteOpenHelper {
 
@@ -34,6 +35,7 @@ public class PairDao extends SQLiteOpenHelper {
   }
 
   public void create(Pair pair) {
+    Log.d("CRYPTOMMS", pair.phoneNumber);
     SQLiteDatabase db = this.getWritableDatabase();
 
     ContentValues values = new ContentValues();
@@ -47,6 +49,7 @@ public class PairDao extends SQLiteOpenHelper {
   }
 
   public Pair getByPhoneNumber(String phoneNumber) {
+    Log.d("CRYPTOMMS", phoneNumber);
     SQLiteDatabase db = this.getReadableDatabase();
 
     Cursor cursor = db.query(TABLE_NAME, 
@@ -55,7 +58,7 @@ public class PairDao extends SQLiteOpenHelper {
       new String[] { String.valueOf(phoneNumber) }, 
       null, null, null, null);
 
-    if (cursor != null) {
+    if (cursor != null && cursor.getCount() > 0) {
       cursor.moveToFirst();
       Pair pair = new Pair(Integer.parseInt(cursor.getString(0)),
         cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));

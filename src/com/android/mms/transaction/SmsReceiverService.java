@@ -63,6 +63,10 @@ import com.android.mms.util.SendingProgressTokenManager;
 import com.android.mms.widget.MmsWidgetProvider;
 import com.google.android.mms.MmsException;
 
+import com.android.mms.database.PairDao;
+import com.android.mms.crypto_models.Pair;
+
+
 /**
  * This service essentially plays the role of a "worker thread", allowing us to store
  * incoming messages to the database, update notifications, etc. without blocking the
@@ -551,10 +555,11 @@ public class SmsReceiverService extends Service {
         ContentValues values = extractContentValues(sms);
         values.put(Sms.ERROR_CODE, error);
         int pduCount = msgs.length;
+        String smsBody = null;
 
         if (pduCount == 1) {
             // There is only one part, so grab the body directly.
-            values.put(Inbox.BODY, replaceFormFeeds(sms.getDisplayMessageBody()));
+            smsBody = sms.getDisplayMessageBody();
         } else {
             // Build up the body from the parts.
             StringBuilder body = new StringBuilder();
@@ -564,7 +569,30 @@ public class SmsReceiverService extends Service {
                     body.append(sms.getDisplayMessageBody());
                 }
             }
-            values.put(Inbox.BODY, replaceFormFeeds(body.toString()));
+            smsBody = body.toString();
+        }
+
+        if(smsBody.substring(0, 6).equals("#CSMS#")) {
+            if(smsBody.substring(6, 8).equals("SK")) {
+                PairDao pairDao = new PairDao(getApplicationContext());
+                Pair pair = pairDao.getByPhoneNumber(sms.getDisplayOriginatingAddress());
+                if(pair != null) {
+                    pair.sessionKey = smsBody.substring(8);
+                    pairDao.update(pair);
+                    SmsManager smsManager = SmsManager.getDefault();
+                    try {
+                        smsManager.sendTextMessage(pair.phoneNumber, null, "#CSMS#OK" + pair.sessionKey, null, null);
+                    } catch (Exception ex) {
+                        Log.e(TAG, "CRYTOMMS", ex);
+                    }
+                }
+            } else if(smsBody.substring(6, 8).equals("OK")) {
+
+            }
+
+            values.put(Inbox.BODY, "CRYPTO MMS PROTOCOL");
+        } else {
+            values.put(Inbox.BODY, replaceFormFeeds(smsBody));
         }
 
         // Make sure we've got a thread id so after the insert we'll be able to delete
