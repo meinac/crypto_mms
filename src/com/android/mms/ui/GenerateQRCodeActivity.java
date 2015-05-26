@@ -24,7 +24,7 @@ public class GenerateQRCodeActivity extends Activity {
 
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
-    phoneNumber = PreferenceManager.getDefaultSharedPreferences(this).getString("pref_key_manage_phone_number", null);
+    phoneNumber = PreferenceManager.getDefaultSharedPreferences(this).getString("pref_key_manage_phone_number", null).trim();
     if(phoneNumber.length() == 11) {
       phoneNumber = "+9" + phoneNumber;
     }

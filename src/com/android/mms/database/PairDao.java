@@ -8,35 +8,24 @@ import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
 import com.android.mms.crypto_models.Pair;
-import android.util.Log;
+import com.android.mms.database.Database;
 
-public class PairDao extends SQLiteOpenHelper {
+public class PairDao {
 
-  private static final int DATABASE_VERSION = 1;
-  private static final String DATABASE_NAME = "csms";
   private static final String TABLE_NAME = "pairs";
   private static final String KEY_ID = "id";
   private static final String KEY_PHONE = "phone_number";
   private static final String KEY_PUBLIC_KEY_EXPONENT = "public_key_exponent";
   private static final String KEY_PUBLIC_KEY_MODULUS = "public_key_modulus";
   private static final String KEY_SESSION_KEY = "session_key";
+  private Database dbHelper;
 
   public PairDao(Context context) {
-    super(context, DATABASE_NAME, null, DATABASE_VERSION);
-  }
-
-  public void onCreate(SQLiteDatabase db) {
-    db.execSQL("CREATE TABLE " + TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_PHONE + " TEXT, " + KEY_PUBLIC_KEY_EXPONENT + " TEXT, " + KEY_PUBLIC_KEY_MODULUS + " TEXT, " + KEY_SESSION_KEY + " TEXT )");
-  }
-
-  public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-    db.execSQL("DROP TABLE IF EXISTS " + TABLE_NAME);
-    onCreate(db);
+    dbHelper = new Database(context);
   }
 
   public void create(Pair pair) {
-    Log.d("CRYPTOMMS", pair.phoneNumber);
-    SQLiteDatabase db = this.getWritableDatabase();
+    SQLiteDatabase db = dbHelper.getWritableDatabase();
 
     ContentValues values = new ContentValues();
     values.put(KEY_PHONE, pair.phoneNumber);
@@ -49,8 +38,7 @@ public class PairDao extends SQLiteOpenHelper {
   }
 
   public Pair getByPhoneNumber(String phoneNumber) {
-    Log.d("CRYPTOMMS", phoneNumber);
-    SQLiteDatabase db = this.getReadableDatabase();
+    SQLiteDatabase db = dbHelper.getReadableDatabase();
 
     Cursor cursor = db.query(TABLE_NAME, 
       new String[] { KEY_ID, KEY_PHONE, KEY_PUBLIC_KEY_EXPONENT, KEY_PUBLIC_KEY_MODULUS, KEY_SESSION_KEY }, 
@@ -68,7 +56,7 @@ public class PairDao extends SQLiteOpenHelper {
   }
 
   public int update(Pair pair) {
-    SQLiteDatabase db = this.getWritableDatabase();
+    SQLiteDatabase db = dbHelper.getWritableDatabase();
 
     ContentValues values = new ContentValues();
     values.put(KEY_PHONE, pair.phoneNumber);
@@ -80,7 +68,7 @@ public class PairDao extends SQLiteOpenHelper {
   }
 
   public void delete(Pair pair) {
-    SQLiteDatabase db = this.getWritableDatabase();
+    SQLiteDatabase db = dbHelper.getWritableDatabase();
     db.delete(TABLE_NAME, KEY_ID + " = ?", new String[] { String.valueOf(pair.id) });
     db.close();
   }

@@ -65,6 +65,9 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
             // (e.g. "+8211-123-4567" -> "+82111234567")
             mDest = PhoneNumberUtils.stripSeparators(mDest);
             mDest = Conversation.verifySingleRecipient(mContext, mThreadId, mDest);
+            if(mDest.length() == 11) {
+                mDest = "+9" + mDest;
+            }
             pairDao = new PairDao(mContext);
             pair = pairDao.getByPhoneNumber(mDest);
             if(pair != null) {
@@ -74,6 +77,7 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
                     messages = smsManager.divideMessage("#CSMS#SK" + sessionKey);
                     DelayedSmsDao dSmsDao = new DelayedSmsDao(mContext);
                     dSmsDao.create(new DelayedSms(mDest, mMessageText));
+                    dSmsDao.getByDestinationNumber(mDest);
                 }
                 else {
                     messages = smsManager.divideMessage(AESCrypto.encrypt(pair, mMessageText));
