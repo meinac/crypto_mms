@@ -16,6 +16,10 @@ import java.security.SecureRandom;
 
 import javax.crypto.Cipher;
 import javax.crypto.KeyGenerator;
+
+import javax.crypto.SecretKey;
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 
 public class AESCrypto {
@@ -24,23 +28,30 @@ public class AESCrypto {
     //returns randomly generated aes key as String
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static String generateAESKey() {
-        SecretKeySpec sks = null;
-        byte[] sksbyte;
-        String sessionKey;
-
         try {
-            SecureRandom sr = SecureRandom.getInstance("SHA1PRNG");
-            sr.setSeed("any data used as random seed".getBytes());
-            KeyGenerator kg = KeyGenerator.getInstance("AES");
-            kg.init(256, sr);
-            sks = new SecretKeySpec((kg.generateKey()).getEncoded(), "AES");
-            sksbyte = sks.getEncoded();
-            sessionKey = Base64.encodeToString(sksbyte, Base64.DEFAULT);
-            return sessionKey;
-        } catch (Exception e) {
-            Log.e(TAG, "AES secret key spec error");
+            SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
+            PBEKeySpec spec = new PBEKeySpec(
+                "password".toCharArray(),
+                generateSalt().getBytes("UTF-8"),
+                65536,
+                256
+            );
+
+            SecretKey secretKey = factory.generateSecret(spec);
+            SecretKeySpec secret = new SecretKeySpec(secretKey.getEncoded(), "AES");
+
+            return Base64.encodeToString(secretKey.getEncoded(), Base64.DEFAULT);
+        } catch(Exception e) {
+            Log.e(TAG, "AES encryption error: " + e.toString());
+            return null;
         }
-        return  null;
+    }
+
+    private static String generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte bytes[] = new byte[20];
+        random.nextBytes(bytes);
+        return new String(bytes);
     }
 
     /*
@@ -50,17 +61,21 @@ public class AESCrypto {
     */
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static String encrypt(Pair pair, String message) {
-        String encoded;
+        String encoded = null;
         byte[] encryptedBytes = null;
         try {
+            byte[] decodedSessionKey = Base64.decode(pair.sessionKey, Base64.DEFAULT);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(decodedSessionKey, "AES");
+
             Cipher c = Cipher.getInstance("AES");
-            SecretKeySpec sks = new SecretKeySpec(pair.sessionKey.getBytes(), "AES");
-            c.init(Cipher.ENCRYPT_MODE, sks);
+            c.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+
             encryptedBytes = c.doFinal(message.getBytes());
         } catch (Exception e) {
-            Log.e(TAG, "AES encryption error");
+            Log.e(TAG, "AES encryption error: " + e.toString());
         }
         encoded = Base64.encodeToString(encryptedBytes, Base64.DEFAULT);
+        Log.d(TAG, "Encrypted is " + encoded);
         return encoded;
     }
 
@@ -71,17 +86,22 @@ public class AESCrypto {
     */
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static String decrypt(Pair pair, String encoded) {
+        Log.d(TAG, "Try to decrypt " + encoded);
         byte[] decryptedBytes = null;
         try {
-            byte[] decoded = Base64.decode(encoded,Base64.DEFAULT);
+            byte[] decoded = Base64.decode(encoded, Base64.DEFAULT);
+
+            byte[] decodedSessionKey = Base64.decode(pair.sessionKey, Base64.DEFAULT);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(decodedSessionKey, "AES");
+
             Cipher c = Cipher.getInstance("AES");
-            SecretKeySpec sks = new SecretKeySpec(pair.sessionKey.getBytes(), "AES");
-            c.init(Cipher.DECRYPT_MODE, sks);
+            c.init(Cipher.DECRYPT_MODE, secretKeySpec);
+
             decryptedBytes = c.doFinal(decoded);
         } catch (Exception e) {
-            Log.e(TAG, "AES decryption error");
+            Log.e(TAG, "AES decryption error: " + e.toString());
         }
-        return decryptedBytes.toString();
+        return new String(decryptedBytes);
     }
 
 }
