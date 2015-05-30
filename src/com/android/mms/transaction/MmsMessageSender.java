@@ -69,6 +69,7 @@ public class MmsMessageSender implements MessageSender {
 
     public boolean sendMessage(long token) throws MmsException {
         // Load the MMS from the message uri
+        Log.d("CRYPTOMMS", "sendMessage uri: " + mMessageUri);
         if (Log.isLoggable(LogTag.APP, Log.VERBOSE)) {
             LogTag.debug("sendMessage uri: " + mMessageUri);
         }

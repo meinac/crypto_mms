@@ -577,7 +577,7 @@ public class SmsReceiverService extends Service {
             }
             smsBody = body.toString();
         }
-        Log.d("CRYPTOMMS", smsBody);
+        Log.d("CRYPTOMMS", "SMS BODY IS = " + smsBody);
         if(smsBody.length() > 8 && smsBody.substring(0, 6).equals("#CSMS#")) {
             PairDao pairDao = new PairDao(getApplicationContext());
             Pair pair = pairDao.getByPhoneNumber(sms.getDisplayOriginatingAddress());

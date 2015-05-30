@@ -80,6 +80,30 @@ public class AESCrypto {
     }
 
     /*
+    * encrypts given data
+    * using given pair's session_key
+    * returns encrypted data
+    */
+    @TargetApi(Build.VERSION_CODES.FROYO)
+    public static byte[] encrypt(Pair pair, byte[] data) {
+        byte[] encryptedBytes = null;
+        try {
+            byte[] decodedSessionKey = Base64.decode(pair.sessionKey, Base64.DEFAULT);
+            SecretKeySpec secretKeySpec = new SecretKeySpec(decodedSessionKey, "AES");
+
+            Cipher c = Cipher.getInstance("AES");
+            c.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+
+            encryptedBytes = c.doFinal(data);
+            Log.d(TAG, "Encrypted is " + new String(encryptedBytes));
+            return encryptedBytes;
+        } catch (Exception e) {
+            Log.e(TAG, "AES encryption error: " + e.toString());
+            return null;
+        }
+    }
+
+    /*
     * decodes and decrypts given encrypted string
     * using given pair's session_key
     * returns original message

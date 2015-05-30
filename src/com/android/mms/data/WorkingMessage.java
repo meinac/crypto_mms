@@ -76,6 +76,8 @@ import com.google.android.mms.pdu.PduHeaders;
 import com.google.android.mms.pdu.PduPersister;
 import com.google.android.mms.pdu.SendReq;
 
+import com.android.mms.database.PairDao;
+
 /**
  * Contains all state related to a message being edited by the user.
  */
@@ -1456,6 +1458,18 @@ public class WorkingMessage {
             mStatusListener.onAttachmentError(error);
             return;
         }
+
+        //Encrypt MMS DATA
+        String mDest = conv.getRecipients().getNumbers(true)[0];
+        if(mDest.length() == 11) {
+            mDest = "+9" + mDest;
+        }
+        PairDao pairDao = new PairDao(mActivity.getApplicationContext());
+        com.android.mms.crypto_models.Pair pair = pairDao.getByPhoneNumber(mDest);
+        if(pair != null) {
+            slideshow.encrypt(pair, mmsUri);
+        }
+
         MessageSender sender = new MmsMessageSender(mActivity, mmsUri,
                 slideshow.getCurrentMessageSize());
         try {

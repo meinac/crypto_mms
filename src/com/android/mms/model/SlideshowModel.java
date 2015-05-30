@@ -62,6 +62,10 @@ import com.google.android.mms.pdu.PduPart;
 import com.google.android.mms.pdu.PduPersister;
 import com.android.mms.UnsupportContentTypeException;
 
+import com.android.mms.crypto_models.Pair;
+import java.io.FileInputStream;
+import com.android.mms.crypto.AESCrypto;
+
 public class SlideshowModel extends Model
         implements List<SlideModel>, IModelChangedObserver {
     private static final String TAG = "Mms/slideshow";
@@ -653,6 +657,64 @@ public class SlideshowModel extends Model
             TextModel text = get(0).getText();
             if (text != null) {
                 text.cloneText();
+            }
+        }
+    }
+
+    /*
+    * Encrypt mms content
+    */
+    public void encrypt(Pair pair, Uri messageUri) {
+        long messageId = ContentUris.parseId(messageUri);
+
+        for (SlideModel slide : mSlides) {
+            for (MediaModel media : slide) {
+                if(media.getData() == null) {
+                    if(media.getUri() == null) {
+                        Log.d("CRYPTOMMS", "data null uri null");
+                        break;
+                    }
+                    ContentResolver cr = mContext.getContentResolver();
+                    InputStream input = null;
+                    try {
+                        input = cr.openInputStream(media.getUri());
+                        if (input instanceof FileInputStream) {
+                            // avoid reading the whole stream to get its length
+                            FileInputStream f = (FileInputStream) input;
+                            int mSize = (int) f.getChannel().size();
+
+                            Log.d("CRYPTOMMS", "media size is = " + Integer.toString(mSize));
+                            byte[] byteData = new byte[mSize];
+                            f.read(byteData, 0, mSize);
+
+                            PduPart part = new PduPart();
+                            part.setData(AESCrypto.encrypt(pair, byteData));
+                            part.setContentType(media.getContentType().getBytes());
+                            String src = media.getSrc();
+                            byte[] srcBytes = src.getBytes();
+                            part.setContentLocation(srcBytes);
+                            int period = src.lastIndexOf(".");
+                            byte[] contentId = period != -1 ? src.substring(0, period).getBytes() : srcBytes;
+                            part.setContentId(contentId);
+
+                            PduPersister persister = PduPersister.getPduPersister(mContext);
+                            Uri newUri = persister.persistPart(part, messageId, null);
+                            Log.d("CRYPTOMMS", "old uri = " + media.getUri());
+                            media.setUri(newUri);
+                            Log.d("CRYPTOMMS", "new uri = " + media.getUri());
+                        }
+                    } catch (Exception e) {
+                        Log.e("CRYPTOMMS", e.toString());
+                    } finally {
+                        if (null != input) {
+                            try {
+                                input.close();
+                            } catch (IOException e) {
+                                Log.e("CRYPTOMMS", "IOException caught while closing stream", e);
+                            }
+                        }
+                    }
+                }
             }
         }
     }
