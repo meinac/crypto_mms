@@ -44,6 +44,10 @@ import com.google.android.mms.pdu.PduParser;
 import com.google.android.mms.pdu.PduPersister;
 import com.google.android.mms.pdu.RetrieveConf;
 
+import com.android.mms.database.PairDao;
+import com.android.mms.crypto_models.Pair;
+import com.android.mms.crypto.AESCrypto;
+
 /**
  * The RetrieveTransaction is responsible for retrieving multimedia
  * messages (M-Retrieve.conf) from the MMSC server.  It:
@@ -148,6 +152,26 @@ public class RetrieveTransaction extends Transaction implements Runnable {
                 mTransactionState.setState(TransactionState.FAILED);
                 mTransactionState.setContentUri(mUri);
             } else {
+                Log.d("CRYPTOMMS", "Old Message Uri is " + mUri);
+
+                String from = retrieveConf.getFrom().getString();
+                Log.d("CRYPTOMMS", "MMS Comes from " + from);
+                PairDao pairDao = new PairDao(mContext);
+                Pair pair = pairDao.getByPhoneNumber(from);
+
+                try {
+                    int i = 0;
+                    while(retrieveConf.getBody().getPart(i) != null) {
+                        byte[] arr = retrieveConf.getBody().getPart(i).getData();
+                        if(arr != null && pair != null && pair.sessionKey != null) {
+                            byte[] decrypted = AESCrypto.decrypt(pair, arr);
+                            retrieveConf.getBody().getPart(i).setData(decrypted);
+                            Log.d("CRYPTOMMS", "MMS DECRYPTED");
+                        }
+                        i++;
+                    }
+                } catch(Exception e) {}
+
                 // Store M-Retrieve.conf into Inbox
                 PduPersister persister = PduPersister.getPduPersister(mContext);
                 msgUri = persister.persist(retrieveConf, Inbox.CONTENT_URI, true,
@@ -167,6 +191,7 @@ public class RetrieveTransaction extends Transaction implements Runnable {
                 // Copy over the locked flag from the M-Notification.ind in case
                 // the user locked the message before activating the download.
                 updateContentLocation(mContext, msgUri, mContentLocation, mLocked);
+                Log.d("CRYPTOMMS", "New uri is = " + msgUri);
             }
 
             // Delete the corresponding M-Notification.ind.

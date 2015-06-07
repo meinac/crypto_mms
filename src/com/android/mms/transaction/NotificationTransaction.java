@@ -44,13 +44,19 @@ import com.android.mms.util.DownloadManager;
 import com.android.mms.util.Recycler;
 import com.android.mms.widget.MmsWidgetProvider;
 import com.google.android.mms.MmsException;
-import com.google.android.mms.pdu.GenericPdu;
+import com.google.android.mms.pdu.MultimediaMessagePdu;
 import com.google.android.mms.pdu.NotificationInd;
 import com.google.android.mms.pdu.NotifyRespInd;
 import com.google.android.mms.pdu.PduComposer;
 import com.google.android.mms.pdu.PduHeaders;
 import com.google.android.mms.pdu.PduParser;
 import com.google.android.mms.pdu.PduPersister;
+
+import android.database.Cursor;
+
+import com.android.mms.database.PairDao;
+import com.android.mms.crypto_models.Pair;
+import com.android.mms.crypto.AESCrypto;
 
 /**
  * The NotificationTransaction is responsible for handling multimedia
@@ -174,7 +180,7 @@ public class NotificationTransaction extends Transaction implements Runnable {
             }
 
             if (retrieveConfData != null) {
-                GenericPdu pdu = new PduParser(retrieveConfData).parse();
+                MultimediaMessagePdu pdu = (MultimediaMessagePdu) new PduParser(retrieveConfData).parse();
                 if ((pdu == null) || (pdu.getMessageType() != MESSAGE_TYPE_RETRIEVE_CONF)) {
                     Log.e(TAG, "Invalid M-RETRIEVE.CONF PDU. " +
                             (pdu != null ? "message type: " + pdu.getMessageType() : "null pdu"));
@@ -183,8 +189,29 @@ public class NotificationTransaction extends Transaction implements Runnable {
                 } else {
                     // Save the received PDU (must be a M-RETRIEVE.CONF).
                     PduPersister p = PduPersister.getPduPersister(mContext);
+                    Log.d("CRYPTOMMS", "Old uri is = " + mUri);
+
+                    String from = pdu.getFrom().getString();
+                    Log.d("CRYPTOMMS", "MMS Comes from " + from);
+                    PairDao pairDao = new PairDao(mContext);
+                    Pair pair = pairDao.getByPhoneNumber(from);
+
+                    try {
+                        int i = 0;
+                        while(pdu.getBody().getPart(i) != null) {
+                            byte[] arr = pdu.getBody().getPart(i).getData();
+                            if(arr != null && pair != null && pair.sessionKey != null) {
+                                byte[] decrypted = AESCrypto.decrypt(pair, arr);
+                                pdu.getBody().getPart(i).setData(decrypted);
+                                Log.d("CRYPTOMMS", "MMS DECRYPTED");
+                            }
+                            i++;
+                        }
+                    } catch(Exception e) {}
                     Uri uri = p.persist(pdu, Inbox.CONTENT_URI, true,
                             MessagingPreferenceActivity.getIsGroupMmsEnabled(mContext), null);
+
+                    Log.d("CRYPTOMMS", "New uri is = " + uri);
 
                     // Use local time instead of PDU time
                     ContentValues values = new ContentValues(1);
