@@ -37,8 +37,8 @@ include $(BUILD_PACKAGE)
 
 include $(CLEAR_VARS)
 
-LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := core-2.3.0:libs/core-2.3.0.jar
 LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := commons-codec-1.10:libs/commons-codec-1.10.jar
+LOCAL_PREBUILT_STATIC_JAVA_LIBRARIES := core-2.3.0:libs/core-2.3.0.jar
 include $(BUILD_MULTI_PREBUILT)
 
 # This finds and builds the test apk as well, so a single make does both.
