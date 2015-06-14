@@ -75,7 +75,9 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
                     pair.sessionKey = AESCrypto.generateAESKey();
                     Log.d("CRYPTOMMS", "Created Session Key is " + pair.sessionKey);
                     String sessionKey = RSACrypto.encryptSessionKey(pair);
-                    messages = smsManager.divideMessage("#CSMS#SK" + sessionKey);
+                    RSACrypto rsa = new RSACrypto(mContext);
+                    String signature = rsa.createSignature(pair);
+                    messages = smsManager.divideMessage("#CSMS#SK" + sessionKey + " " + signature);
                     DelayedSmsDao dSmsDao = new DelayedSmsDao(mContext);
                     dSmsDao.create(new DelayedSms(mDest, mMessageText));
                     dSmsDao.getByDestinationNumber(mDest);

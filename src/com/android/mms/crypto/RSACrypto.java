@@ -25,6 +25,7 @@ import java.io.ObjectInputStream;
 import com.android.mms.crypto_models.Pair;
 import javax.crypto.Cipher;
 import android.util.Base64;
+import java.security.MessageDigest;
 
 public class RSACrypto {
 
@@ -146,6 +147,53 @@ public class RSACrypto {
       cipher.init(Cipher.ENCRYPT_MODE, pubKey);
       byte[] cipherData = cipher.doFinal(pair.sessionKey.getBytes());
       return Base64.encodeToString(cipherData, Base64.DEFAULT);
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  public String createSignature(Pair pair) {
+    RSAPrivateKeySpec keySpec = getPrivateKeySpec();
+    try {
+      KeyFactory fact = KeyFactory.getInstance("RSA");
+      java.security.PrivateKey privateKey = fact.generatePrivate(keySpec);
+
+      Cipher cipher = Cipher.getInstance("RSA");
+      cipher.init(Cipher.ENCRYPT_MODE, privateKey);
+      String fingerPrint = getMD5(pair.sessionKey);
+      return Base64.encodeToString(cipher.doFinal(fingerPrint.getBytes()), Base64.DEFAULT);
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  public static String decryptSignature(Pair pair, String signature) {
+    RSAPublicKeySpec keySpec = new RSAPublicKeySpec(new BigInteger(pair.publicKeyModulus), new BigInteger(pair.publicKeyExponent));
+    try {
+      KeyFactory fact = KeyFactory.getInstance("RSA");
+      java.security.PrivateKey publicKey = fact.generatePrivate(keySpec);
+
+      Cipher cipher = Cipher.getInstance("RSA");
+      cipher.init(Cipher.DECRYPT_MODE, publicKey);
+      return new String(cipher.doFinal(Base64.decode(signature, Base64.DEFAULT)));
+    } catch (Exception ex) {
+      return null;
+    }
+  }
+
+  public static boolean validateMessage(String sessionKey, String fingerPrint) {
+    return (getMD5(sessionKey).equals(fingerPrint));
+  }
+
+  private static String getMD5(String text) {
+    try {
+      MessageDigest md5 = MessageDigest.getInstance("MD5");
+      byte[] array = md5.digest(text.getBytes());
+      StringBuffer sb = new StringBuffer();
+      for(int i = 0; i < array.length; i++) {
+        sb.append(Integer.toHexString((array[i] & 0xFF) | 0x100).substring(1,3));
+      }
+      return sb.toString();
     } catch (Exception ex) {
       return null;
     }

@@ -584,32 +584,49 @@ public class SmsReceiverService extends Service {
             if(pair != null) {
                 if(smsBody.substring(6, 8).equals("SK")) {
                     RSACrypto rsa = new RSACrypto(getApplicationContext());
-                    pair.sessionKey = rsa.decrypt(smsBody.substring(8));
-                    Log.d("CRYPTOMMS", "Received Session Key is " + pair.sessionKey);
-                    pairDao.update(pair);
-                    SmsManager smsManager = SmsManager.getDefault();
-                    ArrayList<String> nMessages = smsManager.divideMessage("#CSMS#OK" + RSACrypto.encryptSessionKey(pair));
-                    try {
-                        smsManager.sendMultipartTextMessage(pair.phoneNumber, null, nMessages, null, null);
-                    } catch (Exception ex) {
-                        Log.e("CRYPTOMMS", ex.toString());
+                    String mBody = smsBody.substring(8);
+                    String[] parts = mBody.split(" ");
+                    String sessionKeyPart = rsa.decrypt(parts[0]);
+                    String fingerPrint = RSACrypto.decryptSignature(pair, parts[1]);
+                    if(RSACrypto.validateMessage(sessionKeyPart, fingerPrint)) {
+                        pair.sessionKey = sessionKeyPart;
+                        Log.d("CRYPTOMMS", "Received Session Key is " + pair.sessionKey);
+                        pairDao.update(pair);
+                        SmsManager smsManager = SmsManager.getDefault();
+                        String signature = rsa.createSignature(pair);
+                        ArrayList<String> nMessages = smsManager.divideMessage("#CSMS#OK" + RSACrypto.encryptSessionKey(pair) + " " + signature);
+                        try {
+                            smsManager.sendMultipartTextMessage(pair.phoneNumber, null, nMessages, null, null);
+                        } catch (Exception ex) {
+                            Log.e("CRYPTOMMS", ex.toString());
+                        }
+                        values.put(Inbox.BODY, "CRYPTO MMS PROTOCOL");
+                    } else {
+                        values.put(Inbox.BODY, "INVALID KEY RECEIVED");
                     }
-                    values.put(Inbox.BODY, "CRYPTO MMS PROTOCOL");
                 } else if(smsBody.substring(6, 8).equals("OK")) {
                     RSACrypto rsa = new RSACrypto(getApplicationContext());
-                    pair.sessionKey = rsa.decrypt(smsBody.substring(8));
-                    Log.d("CRYPTOMMS", "Received Session Key is " + pair.sessionKey);
-                    pairDao.update(pair);
-                    DelayedSmsDao smsDao = new DelayedSmsDao(getApplicationContext());
-                    DelayedSms dSms = smsDao.getByDestinationNumber(pair.phoneNumber);
-                    SmsManager smsManager = SmsManager.getDefault();
-                    ArrayList<String> nMessages = smsManager.divideMessage("#CSMS#MG" + AESCrypto.encrypt(pair, dSms.message));
-                    try {
-                        smsManager.sendMultipartTextMessage(pair.phoneNumber, null, nMessages, null, null);
-                    } catch (Exception ex) {
-                        Log.e("CRYPTOMMS", ex.toString());
+                    String mBody = smsBody.substring(8);
+                    String[] parts = mBody.split(" ");
+                    String sessionKeyPart = rsa.decrypt(parts[0]);
+                    String fingerPrint = RSACrypto.decryptSignature(pair, parts[1]);
+                    if(RSACrypto.validateMessage(sessionKeyPart, fingerPrint)) {
+                        pair.sessionKey = sessionKeyPart;
+                        Log.d("CRYPTOMMS", "Received Session Key is " + pair.sessionKey);
+                        pairDao.update(pair);
+                        DelayedSmsDao smsDao = new DelayedSmsDao(getApplicationContext());
+                        DelayedSms dSms = smsDao.getByDestinationNumber(pair.phoneNumber);
+                        SmsManager smsManager = SmsManager.getDefault();
+                        ArrayList<String> nMessages = smsManager.divideMessage("#CSMS#MG" + AESCrypto.encrypt(pair, dSms.message));
+                        try {
+                            smsManager.sendMultipartTextMessage(pair.phoneNumber, null, nMessages, null, null);
+                        } catch (Exception ex) {
+                            Log.e("CRYPTOMMS", ex.toString());
+                        }
+                        values.put(Inbox.BODY, "CRYPTO MMS PROTOCOL");
+                    } else {
+                        values.put(Inbox.BODY, "INVALID KEY RECEIVED");
                     }
-                    values.put(Inbox.BODY, "CRYPTO MMS PROTOCOL");
                 } else if(smsBody.substring(6, 8).equals("MG")) {
                     String decryptedMessage = AESCrypto.decrypt(pair, smsBody.substring(8));
                     values.put(Inbox.BODY, decryptedMessage);
