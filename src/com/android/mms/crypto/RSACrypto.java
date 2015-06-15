@@ -78,7 +78,7 @@ public class RSACrypto {
   private void generateKeys() {
     try {
       KeyPairGenerator kpg = KeyPairGenerator.getInstance("RSA");
-      kpg.initialize(790);
+      kpg.initialize(1024);
       KeyPair kp = kpg.genKeyPair();
       Key publicKey = kp.getPublic();
       Key privateKey = kp.getPrivate();
