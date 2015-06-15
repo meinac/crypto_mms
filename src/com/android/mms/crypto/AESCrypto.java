@@ -110,7 +110,7 @@ public class AESCrypto {
     */
     @TargetApi(Build.VERSION_CODES.FROYO)
     public static String decrypt(Pair pair, String encoded) {
-        Log.d(TAG, "Try to decrypt " + encoded);
+        Log.d(TAG, "Decrypting " + encoded);
         byte[] decryptedBytes = null;
         try {
             byte[] decoded = Base64.decode(encoded, Base64.DEFAULT);

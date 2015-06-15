@@ -588,6 +588,8 @@ public class SmsReceiverService extends Service {
                     String[] parts = mBody.split(" ");
                     String sessionKeyPart = rsa.decrypt(parts[0]);
                     String fingerPrint = RSACrypto.decryptSignature(pair, parts[1]);
+                    Log.d("CRYPTOMMS", "SESSIONKEY = " + sessionKeyPart);
+                    Log.d("CRYPTOMMS", "FINGERPRINT = " + fingerPrint);
                     if(RSACrypto.validateMessage(sessionKeyPart, fingerPrint)) {
                         pair.sessionKey = sessionKeyPart;
                         Log.d("CRYPTOMMS", "Received Session Key is " + pair.sessionKey);
@@ -610,6 +612,8 @@ public class SmsReceiverService extends Service {
                     String[] parts = mBody.split(" ");
                     String sessionKeyPart = rsa.decrypt(parts[0]);
                     String fingerPrint = RSACrypto.decryptSignature(pair, parts[1]);
+                    Log.d("CRYPTOMMS", "SESSIONKEY = " + sessionKeyPart);
+                    Log.d("CRYPTOMMS", "FINGERPRINT = " + fingerPrint);
                     if(RSACrypto.validateMessage(sessionKeyPart, fingerPrint)) {
                         pair.sessionKey = sessionKeyPart;
                         Log.d("CRYPTOMMS", "Received Session Key is " + pair.sessionKey);

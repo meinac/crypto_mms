@@ -171,7 +171,7 @@ public class RSACrypto {
     RSAPublicKeySpec keySpec = new RSAPublicKeySpec(new BigInteger(pair.publicKeyModulus), new BigInteger(pair.publicKeyExponent));
     try {
       KeyFactory fact = KeyFactory.getInstance("RSA");
-      java.security.PrivateKey publicKey = fact.generatePrivate(keySpec);
+      java.security.PublicKey publicKey = fact.generatePublic(keySpec);
 
       Cipher cipher = Cipher.getInstance("RSA");
       cipher.init(Cipher.DECRYPT_MODE, publicKey);
