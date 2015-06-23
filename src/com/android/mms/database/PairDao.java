@@ -18,6 +18,7 @@ public class PairDao {
   private static final String KEY_PUBLIC_KEY_EXPONENT = "public_key_exponent";
   private static final String KEY_PUBLIC_KEY_MODULUS = "public_key_modulus";
   private static final String KEY_SESSION_KEY = "session_key";
+  private static final String KEY_SESSION_LIFE = "session_life";
   private Database dbHelper;
 
   public PairDao(Context context) {
@@ -32,6 +33,7 @@ public class PairDao {
     values.put(KEY_PUBLIC_KEY_EXPONENT, pair.publicKeyExponent);
     values.put(KEY_PUBLIC_KEY_MODULUS, pair.publicKeyModulus);
     values.put(KEY_SESSION_KEY, pair.sessionKey);
+    values.put(KEY_SESSION_LIFE, pair.sessionLife);
 
     db.insert(TABLE_NAME, null, values);
     db.close();
@@ -41,7 +43,7 @@ public class PairDao {
     SQLiteDatabase db = dbHelper.getReadableDatabase();
 
     Cursor cursor = db.query(TABLE_NAME, 
-      new String[] { KEY_ID, KEY_PHONE, KEY_PUBLIC_KEY_EXPONENT, KEY_PUBLIC_KEY_MODULUS, KEY_SESSION_KEY }, 
+      new String[] { KEY_ID, KEY_PHONE, KEY_PUBLIC_KEY_EXPONENT, KEY_PUBLIC_KEY_MODULUS, KEY_SESSION_KEY, KEY_SESSION_LIFE },
       KEY_PHONE + "=?", 
       new String[] { String.valueOf(phoneNumber) }, 
       null, null, null, null);
@@ -49,7 +51,8 @@ public class PairDao {
     if (cursor != null && cursor.getCount() > 0) {
       cursor.moveToFirst();
       Pair pair = new Pair(Integer.parseInt(cursor.getString(0)),
-        cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4));
+        cursor.getString(1), cursor.getString(2), cursor.getString(3), cursor.getString(4),
+        Integer.parseInt(cursor.getString(5)));
       return pair;
     }
     return null;
@@ -63,6 +66,7 @@ public class PairDao {
     values.put(KEY_PUBLIC_KEY_EXPONENT, pair.publicKeyExponent);
     values.put(KEY_PUBLIC_KEY_MODULUS, pair.publicKeyModulus);
     values.put(KEY_SESSION_KEY, pair.sessionKey);
+    values.put(KEY_SESSION_LIFE, pair.sessionLife);
 
     return db.update(TABLE_NAME, values, KEY_ID + " = ?", new String[] { String.valueOf(pair.id) });
   }

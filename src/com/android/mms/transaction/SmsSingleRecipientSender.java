@@ -71,8 +71,9 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
             pairDao = new PairDao(mContext);
             pair = pairDao.getByPhoneNumber(mDest);
             if(pair != null) {
-                if(pair.sessionKey == null) {
+                if(pair.sessionKey == null || pair.sessionLife > 10) {
                     pair.sessionKey = AESCrypto.generateAESKey();
+                    pair.sessionLife = 0;
                     Log.d("CRYPTOMMS", "Created Session Key is " + pair.sessionKey);
                     String sessionKey = RSACrypto.encryptSessionKey(pair);
                     RSACrypto rsa = new RSACrypto(mContext);
@@ -83,8 +84,10 @@ public class SmsSingleRecipientSender extends SmsMessageSender {
                     dSmsDao.getByDestinationNumber(mDest);
                 }
                 else {
+                    pair.sessionLife += 1;
                     messages = smsManager.divideMessage("#CSMS#MG" + AESCrypto.encrypt(pair, mMessageText));
                 }
+                pairDao.update(pair);
             }
             else {
                 messages = smsManager.divideMessage(mMessageText);

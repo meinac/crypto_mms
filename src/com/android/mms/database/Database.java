@@ -16,6 +16,7 @@ public class Database extends SQLiteOpenHelper {
   private static final String KEY_PUBLIC_KEY_EXPONENT = "public_key_exponent";
   private static final String KEY_PUBLIC_KEY_MODULUS = "public_key_modulus";
   private static final String KEY_SESSION_KEY = "session_key";
+  private static final String KEY_SESSION_LIFE = "session_life";
   private static final String KEY_TO = "to_number";
   private static final String KEY_MESSAGE = "message";
 
@@ -25,7 +26,7 @@ public class Database extends SQLiteOpenHelper {
 
   public void onCreate(SQLiteDatabase db) {
     Log.d("CRYPTOMMS", "Creating tables");
-    db.execSQL("CREATE TABLE " + PAIR_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_PHONE + " TEXT, " + KEY_PUBLIC_KEY_EXPONENT + " TEXT, " + KEY_PUBLIC_KEY_MODULUS + " TEXT, " + KEY_SESSION_KEY + " TEXT )");
+    db.execSQL("CREATE TABLE " + PAIR_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_PHONE + " TEXT, " + KEY_PUBLIC_KEY_EXPONENT + " TEXT, " + KEY_PUBLIC_KEY_MODULUS + " TEXT, " + KEY_SESSION_KEY + " TEXT, " + KEY_SESSION_LIFE + " INTEGER )");
     db.execSQL("CREATE TABLE " + SMS_TABLE_NAME + " (" + KEY_ID + " INTEGER PRIMARY KEY, " + KEY_TO + " TEXT, " + KEY_MESSAGE + " TEXT )");
 
   }
